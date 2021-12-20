@@ -1,0 +1,53 @@
+menu "Inkplate Device"
+
+    choice INKPLATE_DEVICE
+        bool "Inkplate device type"
+        default INKPLATE_6_PLUS
+        help
+            Select the inkplate device to use.
+
+        config INKPLATE_6
+            bool "Inkplate 6."
+
+        config INKPLATE_6_PLUS
+            bool "Inkplate 6 Plus."
+            depends on INKPLATE_BACKLIGHT
+            depends on INKPLATE_RTC
+            depends on INKPLATE_INPUT_TOUCH
+
+        config INKPLATE_10
+            bool "Inkplate 10."
+    endchoice
+
+    config INKPLATE_BATTERY
+      bool "Enable battery status and reading"
+
+    config INKPLATE_BACKLIGHT
+      select INKPLATE_6_PLUS
+      bool "Enable backlight"
+
+    config INKPLATE_RTC
+      select INKPLATE_6_PLUS
+      bool "Enable on board Real Time Clock"
+
+    config INKPLATE_MOUNT_SD_CARD
+      bool "Auto mount SD Card"
+
+    choice INKPLATE_INPUT
+      bool "Type of input"
+      help
+        Input type of Inkplate keys or touch screen
+
+      config INKPLATE_INPUT_KEYS
+        bool "Extended case with buttons"
+        help
+            Enable buttons for an extended case
+
+        config INKPLATE_INPUT_TOUCH
+          bool "Touch input"
+          select INKPLATE_6_PLUS
+          help
+              Enable buttons for an extended case
+
+    endchoice
+endmenu
