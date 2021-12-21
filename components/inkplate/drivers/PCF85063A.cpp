@@ -49,7 +49,7 @@ void PCF85063A::setDateTime(struct tm *now) {
 
 void PCF85063A::readDateTime(struct tm *now) {
 	readTime();
-	now->tm_wday =  weekday;
+	now->tm_wday = weekday;
 	now->tm_mday = day;
 	now->tm_mon = month;
 	now->tm_year = year;
