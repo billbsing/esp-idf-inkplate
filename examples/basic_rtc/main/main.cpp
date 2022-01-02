@@ -45,7 +45,7 @@ int w, h;
 void delay(int msec) { vTaskDelay(msec / portTICK_PERIOD_MS); }
 
 void debug_time(struct tm *now) {
-    ESP_LOGI(TAG, "Time: %d-%d-%d %d:%d:%d", now->tm_mday, now->tm_mon, now->tm_year + 1900,
+    ESP_LOGI(TAG, "Time: %d-%d-%d %d:%d:%d", now->tm_mday, now->tm_mon, now->tm_year,
         now->tm_hour, now->tm_min, now->tm_sec);
 }
 //Function that prints the reason by which ESP32 has been awaken from sleep
@@ -69,8 +69,6 @@ void mainTask(void * param)
 {
 
     display.begin();                    // Init Inkplate library (you should call this function ONLY ONCE)
-    display.clearDisplay();             // Clear frame buffer of display
-    display.display();                  // Put clear image on display
 
     w = display.width();
     h = display.height();
@@ -107,6 +105,7 @@ void mainTask(void * param)
         LOG_E("Unable to set countdown");
     }
     */
+    /*
     rtc.setAlarm(2, -1, -1, -1, -1);
 
     for (uint8_t index = 0; index < 65; index ++) {
@@ -115,14 +114,13 @@ void mainTask(void * param)
         ESP_LOGI(TAG, "Time flag: %d", rtc_gpio_get_level(GPIO_NUM_39));
         delay(1000);
     }
-
+    */
     rtc.readDateTime(&now);
     debug_time(&now);
 
 
-    ESP_LOGI(TAG, "deep sleep for 10 seconds");
-    inkplate_platform.deep_sleep_for(10);
-    ESP_LOGI(TAG, "deep sleep end!");
+    ESP_LOGI(TAG, "deep sleep for 10 second after the minute");
+    inkplate_platform.deep_sleep_until(10, -1, -1, -1, -1);
 }
 
 

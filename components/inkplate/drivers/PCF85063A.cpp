@@ -68,16 +68,14 @@ void PCF85063A::readTime()
 
 	wire.request_from(I2C_ADDR, 7);
 
-	while( wire.available() )
-	{
-		second = bcdToDec( wire.read() & 0x7F ); 	// ignore bit 7
-		minute = bcdToDec( wire.read() & 0x7F );
-		hour = bcdToDec( wire.read() & 0x3F );		// ignore bits 7 & 6
-		day = bcdToDec( wire.read() & 0x3F );
-		weekday = bcdToDec( wire.read() & 0x07);	// ignore bits 7,6,5,4 & 3
-		month = bcdToDec( wire.read() & 0x1F);		// ignore bits 7,6 & 5
-		year = bcdToDec( wire.read()) + 1970;
-	}
+	second = bcdToDec( wire.read() & 0x7F ); 	// ignore bit 7
+	minute = bcdToDec( wire.read() & 0x7F );
+	hour = bcdToDec( wire.read() & 0x3F );		// ignore bits 7 & 6
+	day = bcdToDec( wire.read() & 0x3F );
+	weekday = bcdToDec( wire.read() & 0x07);	// ignore bits 7,6,5,4 & 3
+	month = bcdToDec( wire.read() & 0x1F);		// ignore bits 7,6 & 5
+	year = bcdToDec( wire.read()) + 1970;
+
 	Wire::leave();
 
 }
@@ -131,6 +129,17 @@ void PCF85063A::enableAlarm() // datasheet 8.5.6.
 	control_2 &= ~RTC_ALARM_AF;							// clear alarm flag
 
     Wire::enter();
+
+    wire.begin_transmission(I2C_ADDR);
+	wire.write(RTC_TIMER_VAL);
+	wire.write(0x00);	// default
+	wire.end_transmission();
+
+    // disable the countdown timer
+	wire.begin_transmission(I2C_ADDR);
+	wire.write(RTC_TIMER_MODE);
+	wire.write(0x00);	// default
+	wire.end_transmission();
 
 	wire.begin_transmission(I2C_ADDR);
 	wire.write(RTC_CTRL_2);
@@ -209,47 +218,44 @@ void PCF85063A::readAlarm()
 
 	wire.request_from(I2C_ADDR, 5);
 
-	while( wire.available() )
+	alarm_second = wire.read(); 				// read RTC_SECOND_ALARM register
+	if( RTC_ALARM &  alarm_second)				// check is AEN = 1 (second alarm disabled)
 	{
-		alarm_second = wire.read(); 				// read RTC_SECOND_ALARM register
-		if( RTC_ALARM &  alarm_second)				// check is AEN = 1 (second alarm disabled)
-		{
-			alarm_second = 99;						// using 99 as code for no alarm
-		} else {									// else if AEN = 0 (second alarm enabled)
-			alarm_second = bcdToDec( alarm_second & ~RTC_ALARM);	// remove AEN flag and convert to dec number
-		}
+		alarm_second = 99;						// using 99 as code for no alarm
+	} else {									// else if AEN = 0 (second alarm enabled)
+		alarm_second = bcdToDec( alarm_second & ~RTC_ALARM);	// remove AEN flag and convert to dec number
+	}
 
-		alarm_minute = wire.read(); 				// minute
-		if( RTC_ALARM &  alarm_minute)
-		{
-			alarm_minute = 99;
-		} else {
-			alarm_minute = bcdToDec( alarm_minute & ~RTC_ALARM);
-		}
+	alarm_minute = wire.read(); 				// minute
+	if( RTC_ALARM &  alarm_minute)
+	{
+		alarm_minute = 99;
+	} else {
+		alarm_minute = bcdToDec( alarm_minute & ~RTC_ALARM);
+	}
 
-		alarm_hour = wire.read(); 				// hour
-		if( RTC_ALARM &  alarm_hour)
-		{
-			alarm_hour = 99;
-		} else {
-			alarm_hour = bcdToDec( alarm_hour & 0x3F);	// remove bits 7 & 6
-		}
+	alarm_hour = wire.read(); 				// hour
+	if( RTC_ALARM &  alarm_hour)
+	{
+		alarm_hour = 99;
+	} else {
+		alarm_hour = bcdToDec( alarm_hour & 0x3F);	// remove bits 7 & 6
+	}
 
-		alarm_day = wire.read(); 				// day
-		if( RTC_ALARM &  alarm_day)
-		{
-			alarm_day = 99;
-		} else {
-			alarm_day = bcdToDec( alarm_day & 0x3F);	// remove bits 7 & 6
-		}
+	alarm_day = wire.read(); 				// day
+	if( RTC_ALARM &  alarm_day)
+	{
+		alarm_day = 99;
+	} else {
+		alarm_day = bcdToDec( alarm_day & 0x3F);	// remove bits 7 & 6
+	}
 
-		alarm_weekday = wire.read(); 				// weekday
-		if( RTC_ALARM &  alarm_weekday)
-		{
-			alarm_weekday = 99;
-		} else {
-			alarm_weekday = bcdToDec( alarm_weekday & 0x07);	// remove bits 7,6,5,4 & 3
-		}
+	alarm_weekday = wire.read(); 				// weekday
+	if( RTC_ALARM &  alarm_weekday)
+	{
+		alarm_weekday = 99;
+	} else {
+		alarm_weekday = bcdToDec( alarm_weekday & 0x07);	// remove bits 7,6,5,4 & 3
 	}
 	Wire::leave();
 }

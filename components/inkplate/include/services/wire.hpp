@@ -43,7 +43,6 @@ class Wire : NonCopyable
     void       write(uint8_t val);
     uint8_t    read();
     esp_err_t  request_from(uint8_t addr, uint8_t size);
-    bool       available();
 
     inline static void enter() { xSemaphoreTake(mutex, portMAX_DELAY); }
     inline static void leave() { xSemaphoreGive(mutex); }

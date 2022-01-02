@@ -125,8 +125,3 @@ Wire::request_from(uint8_t addr, uint8_t size)
     return ESP_ERR_INVALID_STATE;
   }
 }
-
-bool
-Wire::available() {
-    return true;
-}

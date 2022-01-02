@@ -104,10 +104,10 @@ InkPlatePlatform::deep_sleep_on_rtc() {
     esp_err_t err;
 
     if ((err = esp_sleep_disable_wakeup_source(ESP_SLEEP_WAKEUP_TIMER)) != ESP_OK) {
-      LOG_E("Unable to disable Sleep wait time: %d", err);
+//      LOG_E("Unable to disable Sleep wait time: %d", err);
     }
-    rtc_gpio_init(GPIO_NUM_39);
-    rtc_gpio_set_direction(GPIO_NUM_39, RTC_GPIO_MODE_INPUT_ONLY);
+//    rtc_gpio_init(GPIO_NUM_39);
+//    rtc_gpio_set_direction(GPIO_NUM_39, RTC_GPIO_MODE_INPUT_ONLY);
     if ((err = esp_sleep_enable_ext0_wakeup(GPIO_NUM_39, 0)) != ESP_OK) {
       LOG_E("Unable to set ext1 WakeUp for Deep Sleep: %d", err);
     }
