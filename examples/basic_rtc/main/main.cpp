@@ -121,9 +121,8 @@ void mainTask(void * param)
 
 
     ESP_LOGI(TAG, "deep sleep for 10 seconds");
-//    inkplate_platform.deep_sleep_for(10);
+    inkplate_platform.deep_sleep_for(10);
     ESP_LOGI(TAG, "deep sleep end!");
-    delay(20000);   // Delay between refreshes.
 }
 
 
