@@ -59,8 +59,6 @@ void print_wakeup_reason(){
     }
 }
 
-// Variable that keeps count on how much screen has been partially updated
-int n = 0;
 void mainTask(void * param)
 {
     display.begin();                    // Init Inkplate library (you should call this function ONLY ONCE)
@@ -111,7 +109,7 @@ void mainTask(void * param)
     int pos_y = (height / 2) - (line_height * 2);
 
     print_wakeup_reason();
-    ESP_LOGI(TAG, "Display size: width: %d, height: %d", w, h);
+    ESP_LOGI(TAG, "Display size: width: %d, height: %d", width, height);
 
     display.setTextColor(BLACK, WHITE); // Set text color to be black and background color to be white
     display.setTextSize(3);             // Set text to be 4 times bigger than classic 5x7 px text
@@ -125,10 +123,10 @@ void mainTask(void * param)
     pos_y += line_height;
     display.setCursor(pos_x, pos_y); // Set new position for text
     if (is_alarm) {
-        display.printf("sleep %d seconds after a minute", alarm_second);
+        display.printf("deep sleep %d seconds after a minute", alarm_second);
     }
     else {
-        display.printf("sleep for %d seconds", timer_second);
+        display.printf("deep sleep for %d seconds", timer_second);
     }
 
     display.display();
