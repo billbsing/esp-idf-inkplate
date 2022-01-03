@@ -38,10 +38,6 @@ static const char * TAG = "Main";
   int max = 50;
 #endif
 
-// This variable is used for moving the text (scrolling)
-int offset;
-int w, h;
-
 void delay(int msec) { vTaskDelay(msec / portTICK_PERIOD_MS); }
 
 void debug_time(struct tm *now) {
@@ -67,39 +63,23 @@ void print_wakeup_reason(){
 int n = 0;
 void mainTask(void * param)
 {
-
     display.begin();                    // Init Inkplate library (you should call this function ONLY ONCE)
 
-    w = display.width();
-    h = display.height();
-
-
-    offset = w;
-
-    print_wakeup_reason();
-    ESP_LOGI(TAG, "Display size: width: %d, height: %d", w, h);
-
-    display.setTextColor(BLACK, WHITE); // Set text color to be black and background color to be white
-    display.setTextSize(3);             // Set text to be 4 times bigger than classic 5x7 px text
-    display.setTextWrap(true);         // Disable text wraping
-    display.setCursor(10, h / 2); // Set new position for text
-    display.print(text);            // Write text at new position
-    display.display();
-
     struct tm now;
-    now.tm_year = 2021 - 1900;
-    now.tm_mon = 12;
-    now.tm_mday = 16;
-    now.tm_hour = 19;
-    now.tm_min = 24;
+    now.tm_year = 2022;
+    now.tm_mon = 1;
+    now.tm_mday = 1;
+    now.tm_hour = 1;
+    now.tm_min = 0;
     now.tm_sec = 0;
     // rtc.set_time(&now);
 
 
-    rtc_gpio_init(GPIO_NUM_39);
-    rtc_gpio_set_direction(GPIO_NUM_39, RTC_GPIO_MODE_INPUT_ONLY);
 
     /*
+    // to see when the GPIO pin is rasied on event
+    rtc_gpio_init(GPIO_NUM_39);
+    rtc_gpio_set_direction(GPIO_NUM_39, RTC_GPIO_MODE_INPUT_ONLY);
     rtc.set_alarm(-1, -1, -1, -1, -1);
     if (!rtc.set_countdown(true, RTC::CNTDOWN_CLOCK_1HZ, 8, true, false) ){
         LOG_E("Unable to set countdown");
@@ -119,8 +99,49 @@ void mainTask(void * param)
     debug_time(&now);
 
 
-    ESP_LOGI(TAG, "deep sleep for 10 second after the minute");
-    inkplate_platform.deep_sleep_until(10, -1, -1, -1, -1);
+    uint8_t alarm_second = 30;
+    uint8_t timer_second = 20;
+    bool is_alarm = (now.tm_sec < alarm_second);
+
+    int width = display.width();
+    int height = display.height();
+    int line_height = 30;
+
+    int pos_x = 10;
+    int pos_y = (height / 2) - (line_height * 2);
+
+    print_wakeup_reason();
+    ESP_LOGI(TAG, "Display size: width: %d, height: %d", w, h);
+
+    display.setTextColor(BLACK, WHITE); // Set text color to be black and background color to be white
+    display.setTextSize(3);             // Set text to be 4 times bigger than classic 5x7 px text
+    display.setTextWrap(true);         // Disable text wraping
+    display.setCursor(pos_x, pos_y); // Set new position for text
+    display.print(text);            // Write text at new position
+    pos_y += line_height;
+    display.setCursor(pos_x, pos_y); // Set new position for text
+    display.printf("%02d:%02d:%02d", now.tm_hour, now.tm_min, now.tm_sec);            // Write text at new position
+
+    pos_y += line_height;
+    display.setCursor(pos_x, pos_y); // Set new position for text
+    if (is_alarm) {
+        display.printf("sleep %d seconds after a minute", alarm_second);
+    }
+    else {
+        display.printf("sleep for %d seconds", timer_second);
+    }
+
+    display.display();
+
+    if (is_alarm) {
+        ESP_LOGI(TAG, "deep sleep for %d second after the minute", alarm_second);
+        inkplate_platform.deep_sleep_until(alarm_second, -1, -1, -1, -1);
+    }
+    else {
+        ESP_LOGI(TAG, "deep sleep for %d seconds", timer_second);
+        inkplate_platform.deep_sleep_for(timer_second);
+
+    }
 }
 
 
