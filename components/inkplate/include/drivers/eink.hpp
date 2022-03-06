@@ -1,5 +1,6 @@
 #pragma once
 
+#include "soc/gpio_struct.h"
 #include "logging.hpp"
 #include "frame_buffer.hpp"
 #include "mcp23017.hpp"
@@ -44,11 +45,11 @@ class EInk
     void    turn_on();
     uint8_t read_power_good();
 
-  protected:                     
-    
-    EInk(MCP23017 & mcp) : 
+  protected:
+
+    EInk(MCP23017 & mcp) :
       mcp_int(mcp),
-      panel_state(PanelState::OFF), 
+      panel_state(PanelState::OFF),
       initialized(false),
       partial_allowed(false) {}
 
@@ -94,9 +95,9 @@ class EInk
     const MCP23017::Pin WAKEUP         = MCP23017::Pin::IOPIN_3;
     const MCP23017::Pin PWRUP          = MCP23017::Pin::IOPIN_4;
     const MCP23017::Pin VCOM           = MCP23017::Pin::IOPIN_5;
-    
+
     const MCP23017::Pin GPIO0_ENABLE   = MCP23017::Pin::IOPIN_8;
-  
+
     inline void cl_set()       { GPIO.out_w1ts = CL; }
     inline void cl_clear()     { GPIO.out_w1tc = CL; }
 
@@ -127,4 +128,3 @@ class EInk
     inline void vcom_set()     { mcp_int.digital_write(VCOM,   MCP23017::SignalLevel::HIGH); }
     inline void vcom_clear()   { mcp_int.digital_write(VCOM,   MCP23017::SignalLevel::LOW ); }
 };
-
