@@ -11,6 +11,7 @@
 #include "esp_task_wdt.h"
 #include "driver/gpio.h"
 #include "driver/adc.h"
+#include "esp_timer.h"
 
 #include "logging.hpp"
 
