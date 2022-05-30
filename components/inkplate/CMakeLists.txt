@@ -70,6 +70,8 @@ set(INCLUDE_FOLDERS
 	include/tools
 )
 
-idf_component_register(SRCS ${DRIVERS_SRC} ${GRAPHICAL_SRC} ${SERVICES_SRC}
-                    INCLUDE_DIRS ${INCLUDE_FOLDERS}
-					REQUIRES fatfs nvs_flash)
+idf_component_register(
+    SRCS ${DRIVERS_SRC} ${GRAPHICAL_SRC} ${SERVICES_SRC}
+    INCLUDE_DIRS ${INCLUDE_FOLDERS}
+    REQUIRES fatfs nvs_flash esp_timer
+)
