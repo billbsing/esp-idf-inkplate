@@ -16,15 +16,16 @@ Distributed as-is; no warranty is given.
 
 #include "graphics.hpp"
 #include "inkplate_platform.hpp"
-
 #include <algorithm>
 
-Graphics::Graphics(int16_t w, int16_t h) : 
-  Adafruit_GFX(w, h), Shapes(w, h), Image(w, h) 
+Graphics::Graphics(int16_t w, int16_t h) :
+  Adafruit_GFX(w, h), Shapes(w, h), Image(w, h)
 {
+    ESP_LOGI(TAG, "start graphics");
   _partial     = e_ink.new_frame_buffer_1bit();
   DMemory4Bit  = e_ink.new_frame_buffer_3bit();
 
+  ESP_LOGI(TAG, "buffers created");
   if ((_partial == nullptr) || (DMemory4Bit == nullptr)) {
     ESP_LOGE(TAG, "Unable to allocate PSRAM memory for buffers.");
   }

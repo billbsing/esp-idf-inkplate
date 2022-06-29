@@ -9,6 +9,8 @@
 #include "non_copyable.hpp"
 #include "driver/i2c.h"
 
+#define CMD_HANDLER_BUFFER_SIZE I2C_LINK_RECOMMENDED_SIZE(7)
+
 class Wire : NonCopyable
 {
   private:
@@ -17,6 +19,7 @@ class Wire : NonCopyable
     static SemaphoreHandle_t mutex;
     static StaticSemaphore_t mutex_buffer;
     static const uint8_t BUFFER_LENGTH = 30;
+    static uint8_t cmdlink_buffer[CMD_HANDLER_BUFFER_SIZE];
 
     bool    initialized;
     static  Wire singleton;
@@ -43,9 +46,9 @@ class Wire : NonCopyable
     void       write(uint8_t val);
     uint8_t    read();
     esp_err_t  request_from(uint8_t addr, uint8_t size);
-
     inline static void enter() { xSemaphoreTake(mutex, portMAX_DELAY); }
     inline static void leave() { xSemaphoreGive(mutex); }
+
 };
 
 #if __WIRE__

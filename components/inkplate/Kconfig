@@ -11,9 +11,6 @@ menu "Inkplate Device"
 
         config INKPLATE_6_PLUS
             bool "Inkplate 6 Plus."
-            depends on INKPLATE_BACKLIGHT
-            depends on INKPLATE_RTC
-            depends on INKPLATE_INPUT_TOUCH
 
         config INKPLATE_10
             bool "Inkplate 10."
