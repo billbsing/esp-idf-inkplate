@@ -28,6 +28,7 @@ Distributed as-is; no warranty is given.
 #include "eink_10.hpp"
 #include "press_keys.hpp"
 #include "touch_keys.hpp"
+#include "touch_screen.hpp"
 #include "backlight.hpp"
 #include "PCF85063A.hpp"
 
@@ -60,6 +61,11 @@ Distributed as-is; no warranty is given.
     #error "One of CONFIG_INKPLATE_6, CONFIG_INPLATE_6_PLUS, CONFIG_INKPLATE_10 must be defined."
   #endif
 
+  #if defined(CONFIG_INKPLATE_INPUT_TOUCH_SCREEN)
+    TouchScreen touch_screen(mcp_int, e_ink);
+  #endif
+
+
 #else
   extern MCP23017  mcp_int;
   #if defined(CONFIG_INKPLATE_BATTERY)
@@ -70,6 +76,9 @@ Distributed as-is; no warranty is given.
   #endif
   #if defined(CONFIG_INKPLATE_INPUT_TOUCH)
     extern TouchKeys touch_keys;
+  #endif
+  #if defined(CONFIG_INKPLATE_INPUT_TOUCH_SCREEN)
+    extern TouchScreen touch_screen;
   #endif
   #if defined(CONFIG_INKPLATE_BACKLIGHT)
     extern Backlight backlight;

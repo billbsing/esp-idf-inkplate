@@ -15,7 +15,7 @@
 Wire Wire::singleton;
 SemaphoreHandle_t Wire::mutex = nullptr;
 StaticSemaphore_t Wire::mutex_buffer;
-uint8_t Wire::cmdlink_buffer;
+uint8_t Wire::cmdlink_buffer[];
 
 void
 Wire::setup()
@@ -109,7 +109,8 @@ Wire::read()
 esp_err_t
 Wire::request_from(uint8_t addr, uint8_t size)
 {
-    esp_err_t ret = ESP_ERR_INVALID_STATE;
+    // esp_err_t ret = ESP_ERR_INVALID_STATE;
+    esp_err_t ret = ESP_OK;
     i2c_cmd_handle_t cmd_link = NULL;
   if (!initialized) setup();
 
@@ -128,7 +129,8 @@ Wire::request_from(uint8_t addr, uint8_t size)
 
     ESP_GOTO_ON_ERROR(i2c_master_stop(cmd_link), err, TAG, "i2c_master_stop");
 
-    ESP_GOTO_ON_ERROR(i2c_master_cmd_begin(I2C_NUM_0, cmd_link, 1000 / portTICK_PERIOD_MS), err, TAG, "i2c_master_cmd_begin");
+    ESP_GOTO_ON_ERROR(i2c_master_cmd_begin(I2C_NUM_0, cmd_link, 10000 / portTICK_PERIOD_MS), err, TAG, "i2c_master_cmd_begin");
+
 err:
   if (cmd_link != NULL) {
       // i2c_cmd_link_delete(cmd_link);
@@ -139,7 +141,7 @@ err:
     index = 0;
 
     if (ret != ESP_OK) {
-      ESP_LOGE(TAG, "Unable to complete request_from: %s.", esp_err_to_name(result));
+      ESP_LOGE(TAG, "Unable to complete request_from: %s.", esp_err_to_name(ret));
     }
   }
   return ret;

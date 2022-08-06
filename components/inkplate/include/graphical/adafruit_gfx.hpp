@@ -1,7 +1,7 @@
 #ifndef __ADAFRUIT_GFX_HPP__
 #define __ADAFRUIT_GFX_HPP__
 
-#include <string>
+#include <string.h>
 
 #include "print.hpp"
 #include "gfx_font.hpp"

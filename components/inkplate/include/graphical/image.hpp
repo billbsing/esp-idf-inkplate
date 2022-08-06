@@ -17,8 +17,8 @@ Distributed as-is; no warranty is given.
 #ifndef __IMAGE_HPP__
 #define __IMAGE_HPP__
 
-#include <cstdio>
-#include <string>
+#include <stdio.h>
+#include <string.h>
 
 #include "defines.hpp"
 #include "adafruit_gfx.hpp"

@@ -1,7 +1,7 @@
 #ifndef __DEFINES_HPP__
 #define __DEFINES_HPP__
 
-#include <cstdint>
+#include <stdint.h>
 
 enum class DisplayMode : uint8_t { INKPLATE_1BIT, INKPLATE_3BIT };
 

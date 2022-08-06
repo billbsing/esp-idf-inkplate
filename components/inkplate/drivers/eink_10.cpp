@@ -245,7 +245,7 @@ EInk10::update(FrameBuffer3Bit & frame_buffer)
 
     vscan_start();
 
-    for (int i = 0; i < HEIGHT; i++) {
+    for (int i = 0; i < INKPLATE_HEIGHT; i++) {
 
       hscan_start((GLUT2[k * 256 + *dp] | GLUT[k * 256 + *(dp - 1)]));
       dp -= 2;
@@ -254,7 +254,7 @@ EInk10::update(FrameBuffer3Bit & frame_buffer)
       GPIO.out_w1tc = CL | DATA;
       dp -= 2;
 
-      for (int j = 0; j < ((WIDTH / 8) - 1); j++) {
+      for (int j = 0; j < ((INKPLATE_WIDTH / 8) - 1); j++) {
           GPIO.out_w1ts = CL | (GLUT2[k * 256 + *dp] | GLUT[k * 256 + *(dp - 1)]);
           GPIO.out_w1tc = CL | DATA;
           dp -= 2;
@@ -298,7 +298,7 @@ EInk10::partial_update(FrameBuffer1Bit & frame_buffer, bool force)
   uint8_t * idata = frame_buffer.get_data();
   uint8_t * odata = d_memory_new->get_data();
 
-  for (int i = 0; i < HEIGHT; i++) {
+  for (int i = 0; i < INKPLATE_HEIGHT; i++) {
     for (int j = 0; j < LINE_SIZE_1BIT; j++) {
       diffw =  odata[pos] & ~idata[pos];
       diffb = ~odata[pos] &  idata[pos];
@@ -314,7 +314,7 @@ EInk10::partial_update(FrameBuffer1Bit & frame_buffer, bool force)
     vscan_start();
     n = BITMAP_SIZE_1BIT * 2 - 1;
 
-    for (int i = 0; i < HEIGHT; i++) {
+    for (int i = 0; i < INKPLATE_HEIGHT; i++) {
       uint32_t send = PIN_LUT[p_buffer[n--]];
       hscan_start(send);
 
@@ -354,7 +354,7 @@ EInk10::clean_fast(uint8_t c, uint8_t rep)
 
     vscan_start();
 
-    for (uint16_t i = 0; i < HEIGHT; i++) {
+    for (uint16_t i = 0; i < INKPLATE_HEIGHT; i++) {
 
       hscan_start(send);
 

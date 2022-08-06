@@ -177,7 +177,7 @@ EInk6::update(FrameBuffer1Bit & frame_buffer)
     ptr = &data[BITMAP_SIZE_1BIT - 1];
     vscan_start();
 
-    for (uint16_t i = 0; i < HEIGHT; i++) {
+    for (uint16_t i = 0; i < INKPLATE_HEIGHT; i++) {
       dram = *ptr--;
       send = PIN_LUT[LUTB[dram >> 4]];
       hscan_start(send);
@@ -205,7 +205,7 @@ EInk6::update(FrameBuffer1Bit & frame_buffer)
   ptr = &data[BITMAP_SIZE_1BIT - 1];
   vscan_start();
 
-  for (uint16_t i = 0; i < HEIGHT; i++) {
+  for (uint16_t i = 0; i < INKPLATE_HEIGHT; i++) {
     dram = *ptr--;
     send = PIN_LUT[LUT2[dram >> 4]];
     hscan_start(send);
@@ -232,7 +232,7 @@ EInk6::update(FrameBuffer1Bit & frame_buffer)
   vscan_start();
 
   send = PIN_LUT[0];
-  for (uint16_t i = 0; i < HEIGHT; i++) {
+  for (uint16_t i = 0; i < INKPLATE_HEIGHT; i++) {
     hscan_start(send);
     GPIO.out_w1ts = CL | send;
     GPIO.out_w1tc = CL | DATA;
@@ -285,7 +285,7 @@ EInk6::update(FrameBuffer3Bit & frame_buffer)
 
     vscan_start();
 
-    for (int i = 0; i < HEIGHT; i++) {
+    for (int i = 0; i < INKPLATE_HEIGHT; i++) {
 
       hscan_start((GLUT2[k * 256 + *dp] | GLUT[k * 256 + *(dp - 1)]));
       dp -= 2;
@@ -294,7 +294,7 @@ EInk6::update(FrameBuffer3Bit & frame_buffer)
       GPIO.out_w1tc = CL | DATA;
       dp -= 2;
 
-      for (int j = 0; j < ((WIDTH / 8) - 1); j++) {
+      for (int j = 0; j < ((INKPLATE_WIDTH / 8) - 1); j++) {
           GPIO.out_w1ts = CL | (GLUT2[k * 256 + *dp] | GLUT[k * 256 + *(dp - 1)]);
           GPIO.out_w1tc = CL | DATA;
           dp -= 2;
@@ -339,7 +339,7 @@ EInk6::partial_update(FrameBuffer1Bit & frame_buffer, bool force)
   uint8_t * idata = frame_buffer.get_data();
   uint8_t * odata = d_memory_new->get_data();
 
-  for (int i = 0; i < HEIGHT; i++) {
+  for (int i = 0; i < INKPLATE_HEIGHT; i++) {
     for (int j = 0; j < LINE_SIZE_1BIT; j++) {
       diffw =  odata[pos] & ~idata[pos];
       diffb = ~odata[pos] &  idata[pos];
@@ -355,11 +355,11 @@ EInk6::partial_update(FrameBuffer1Bit & frame_buffer, bool force)
     vscan_start();
     n = BITMAP_SIZE_1BIT * 2 - 1;
 
-    for (int i = 0; i < HEIGHT; i++) {
+    for (int i = 0; i < INKPLATE_HEIGHT; i++) {
       send = PIN_LUT[p_buffer[n--]];
       hscan_start(send);
 
-      for (int j = 0; j < ((WIDTH / 4) - 1); j++) {
+      for (int j = 0; j < ((INKPLATE_WIDTH / 4) - 1); j++) {
         send = PIN_LUT[p_buffer[n--]];
         GPIO.out_w1ts = send | CL;
         GPIO.out_w1tc = DATA | CL;
@@ -395,7 +395,7 @@ EInk6::clean_fast(uint8_t c, uint8_t rep)
 
     vscan_start();
 
-    for (uint16_t i = 0; i < HEIGHT; i++) {
+    for (uint16_t i = 0; i < INKPLATE_HEIGHT; i++) {
 
       hscan_start(send);
 

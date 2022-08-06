@@ -37,6 +37,10 @@ if(CONFIG_INKPLATE_RTC)
 	list(APPEND DRIVERS_SRC drivers/PCF85063A.cpp)
 endif()
 
+if(CONFIG_INKPLATE_INPUT_TOUCH_SCREEN)
+    list(APPEND DRIVERS_SRC drivers/touch_screen.cpp)
+endif()
+
 set(GRAPHICAL_SRC
 	graphical/adafruit_gfx.cpp
 	graphical/graphics.cpp

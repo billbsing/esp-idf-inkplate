@@ -49,6 +49,4 @@ class Inkplate : public Graphics
 
     inline int _getRotation() { return Graphics::getRotation(); }
 
-
-    bool sdCardInit() { return true; }
 };

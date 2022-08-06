@@ -49,21 +49,21 @@ class EInk6 : public EInk, NonCopyable
       { }
 
     #if defined(CONFIG_INKPLATE_6)
-      static const uint16_t WIDTH  = 800; // In pixels
-      static const uint16_t HEIGHT = 600; // In pixels
+      static const uint16_t INKPLATE_WIDTH  = 800; // In pixels
+      static const uint16_t INKPLATE_HEIGHT = 600; // In pixels
     #endif
     #if defined(CONFIG_INKPLATE_6_PLUS)
-      static const uint16_t WIDTH  = 1024; // In pixels
-      static const uint16_t HEIGHT = 758; // In pixels
+      static const uint16_t INKPLATE_WIDTH  = 1024; // In pixels
+      static const uint16_t INKPLATE_HEIGHT = 758; // In pixels
     #endif
 
-    static const uint32_t BITMAP_SIZE_1BIT = ((uint32_t)WIDTH * HEIGHT) >> 3;            // In bytes
-    static const uint32_t BITMAP_SIZE_3BIT = ((uint32_t)WIDTH * HEIGHT) >> 1; // In bytes
-    static const uint16_t LINE_SIZE_1BIT   = WIDTH >> 3;                       // In bytes
-    static const uint16_t LINE_SIZE_3BIT   = WIDTH >> 1;                       // In bytes
+    static const uint32_t BITMAP_SIZE_1BIT = ((uint32_t)INKPLATE_WIDTH * INKPLATE_HEIGHT) >> 3;            // In bytes
+    static const uint32_t BITMAP_SIZE_3BIT = ((uint32_t)INKPLATE_WIDTH * INKPLATE_HEIGHT) >> 1; // In bytes
+    static const uint16_t LINE_SIZE_1BIT   = INKPLATE_WIDTH >> 3;                       // In bytes
+    static const uint16_t LINE_SIZE_3BIT   = INKPLATE_WIDTH >> 1;                       // In bytes
 
-    inline int16_t  get_width() { return WIDTH;  }
-    inline int16_t get_height() { return HEIGHT; }
+    inline int16_t  get_width() { return INKPLATE_WIDTH;  }
+    inline int16_t get_height() { return INKPLATE_HEIGHT; }
 
     inline PanelState get_panel_state() { return panel_state; }
     inline bool        is_initialized() { return initialized; }
@@ -93,7 +93,7 @@ class EInk6 : public EInk, NonCopyable
       private:
         uint8_t data[BITMAP_SIZE_1BIT];
       public:
-        FrameBuffer1BitX() : FrameBuffer1Bit(WIDTH, HEIGHT, BITMAP_SIZE_1BIT) {}
+        FrameBuffer1BitX() : FrameBuffer1Bit(INKPLATE_WIDTH, INKPLATE_HEIGHT, BITMAP_SIZE_1BIT) {}
 
         uint8_t * get_data() { return data; }
     };
@@ -102,7 +102,7 @@ class EInk6 : public EInk, NonCopyable
       private:
         uint8_t data[BITMAP_SIZE_3BIT];
       public:
-        FrameBuffer3BitX() : FrameBuffer3Bit(WIDTH, HEIGHT, BITMAP_SIZE_3BIT) {}
+        FrameBuffer3BitX() : FrameBuffer3Bit(INKPLATE_WIDTH, INKPLATE_HEIGHT, BITMAP_SIZE_3BIT) {}
 
         uint8_t * get_data() { return data; }
     };

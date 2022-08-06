@@ -13,13 +13,17 @@ Please review the LICENSE file included with this example.
 If you have any questions about licensing, please contact techsupport@e-radionica.com
 Distributed as-is; no warranty is given.
 */
-
+#include <esp_log.h>
 #include "image.hpp"
 
 #include <cstdio>
 
+// static const char *TAG = "image_bmp";
+
+
 bool Image::legalBmp(bitmapHeader *bmpHeader)
 {
+    // ESP_LOGI(TAG, "sig: %x, comp: %d, color: %d", bmpHeader->signature, bmpHeader->compression, bmpHeader->color);
     return bmpHeader->signature == 0x4D42 && bmpHeader->compression == 0 &&
            (bmpHeader->color == 1 || bmpHeader->color == 4 || bmpHeader->color == 8 || bmpHeader->color == 16 ||
             bmpHeader->color == 24 || bmpHeader->color == 32);
@@ -40,7 +44,7 @@ void Image::readBmpHeaderFromFile(FILE * f, bitmapHeader * h)
         if (!totalColors)
             totalColors = (1ULL << color);
 
-        uint8_t * buff = new uint8_t[totalColors * 4 + 100];
+        uint8_t * buff = (uint8_t *) calloc(totalColors * 4 + 100, sizeof(uint8_t));
 
         rewind(f);
         fread(buff, totalColors * 4 + 100, 1, f);
@@ -94,10 +98,12 @@ void Image::readBmpHeader(uint8_t *buf, bitmapHeader *_h)
 bool Image::drawBitmapFromFile(const char *fileName, int x, int y, bool dither, bool invert)
 {
     FILE * dat = fopen(fileName, "r");
-    if (dat)
-        return drawBitmapFromFile(dat, x, y, dither, invert);
-    else
-        return 0;
+    bool result = 0;
+    if (dat) {
+        result = drawBitmapFromFile(dat, x, y, dither, invert);
+        fclose(dat);
+    }
+    return result;
 }
 
 bool Image::drawBitmapFromFile(FILE * p, int x, int y, bool dither, bool invert)

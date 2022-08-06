@@ -42,12 +42,17 @@ InkPlatePlatform::setup()
     if (!touch_keys.setup()) return false;
   #endif
 
+  #if defined(CONFIG_INKPLATE_INPUT_TOUCH_SCREEN)
+    // Setup Touch screen
+    if (!touch_screen.setup(1)) return false;
+  #endif
+
   #if defined(CONFIG_INKPLATE_BACKLIGHT)
     // Setup backlight
     if (!backlight.setup()) return false;
   #endif
 
-  #if defined(CONFIG_INKPLATE_MOUNT_SD_CARD)
+  #if defined(CONFIG_INKPLATE_SD_CARD)
     // Mount and check the SD Card
     SDCard::mount();
   #endif

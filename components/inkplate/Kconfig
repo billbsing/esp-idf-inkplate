@@ -27,8 +27,8 @@ menu "Inkplate Device"
       select INKPLATE_6_PLUS
       bool "Enable on board Real Time Clock"
 
-    config INKPLATE_MOUNT_SD_CARD
-      bool "Auto mount SD Card"
+    config INKPLATE_SD_CARD
+      bool "Enable SD Card"
 
     choice INKPLATE_INPUT
       bool "Type of input"
@@ -38,13 +38,18 @@ menu "Inkplate Device"
       config INKPLATE_INPUT_KEYS
         bool "Extended case with buttons"
         help
-            Enable buttons for an extended case
+          Enable buttons for an extended case
 
-        config INKPLATE_INPUT_TOUCH
-          bool "Touch input"
-          select INKPLATE_6_PLUS
-          help
-              Enable buttons for an extended case
+      config INKPLATE_INPUT_TOUCH
+        bool "Touch input"
+        select INKPLATE_6_PLUS
+        help
+          Enable buttons for an extended case
 
+      config INKPLATE_INPUT_TOUCH_SCREEN
+        bool "Touch Screen input"
+        select INKPLATE_6_PLUS
+        help
+            Enable touch screen input
     endchoice
 endmenu
