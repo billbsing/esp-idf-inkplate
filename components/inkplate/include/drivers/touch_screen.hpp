@@ -5,14 +5,14 @@
 #include "eink.hpp"
 
 #define TOUCH_SCREEN_ADDRESS        0x15
-#define TOUCHSCREEN_GPIO_INT        GPIO_NUM_36
+#define TOUCHSCREEN_GPIO_INT        GPIO_NUM_36          // 36
 
 #define BOUND(_a, _x, _b)       ((_a < _x) && (_x < _b))
 
 class TouchScreen
 {
   public:
-    TouchScreen(MCP23017 & mcp, EInk &eInk) : _mcp(mcp), _eInk(eInk) {}
+    TouchScreen(MCP23017 &mcp, EInk &eInk) : _mcp(mcp), _eInk(eInk) {}
     bool setup(uint8_t);
 
     bool touchInArea(int16_t, int16_t, int16_t, int16_t);

@@ -16,14 +16,19 @@
  * @authors     @ e-radionica.com
  ***************************************************/
 
+#include <esp_log.h>
 #include "touch_screen.hpp"
 #include "wire.hpp"
 #include "graphics.hpp"
 
+
 uint16_t _tsXResolution;
 uint16_t _tsYResolution;
 
+static const char *TAG = "touch_screen";
+
 static volatile bool _tsFlag = false;
+
 static void IRAM_ATTR touchscreenInterrupt(void * arg)
 {
     _tsFlag = true;
@@ -38,28 +43,46 @@ static void IRAM_ATTR touchscreenInterrupt(void * arg)
  */
 bool TouchScreen::setup(uint8_t pwrState)
 {
-    Wire::enter();
+//    Wire::enter();
+//    Wire::leave();
     _mcp.set_direction(TOUCHSCREEN_EN, MCP23017::PinMode::OUTPUT);
 
     // Enable power to TS
 
     _mcp.digital_write(TOUCHSCREEN_EN, MCP23017::SignalLevel::LOW);
     // digitalWriteInternal(MCP23017_INT_ADDR, mcpRegsInt, TOUCHSCREEN_EN, LOW);
-    gpio_set_direction(TOUCHSCREEN_GPIO_INT, GPIO_MODE_INPUT_OUTPUT_OD);
-    // pinMode(TOUCHSCREEN_INT, INPUT_PULLUP);
 
     _mcp.set_direction(TOUCHSCREEN_RTS, MCP23017::PinMode::OUTPUT);
     // pinModeInternal(MCP23017_INT_ADDR, mcpRegsInt, TOUCHSCREEN_RTS, OUTPUT);
 
-    Wire::leave();
+
+    /*
+    gpio_config_t gpio_conf = {
+        .pin_bit_mask = (1ULL << TOUCHSCREEN_GPIO_INT),
+        .mode = GPIO_MODE_INPUT,
+        .pull_up_en = GPIO_PULLUP_DISABLE,
+        .pull_down_en = GPIO_PULLDOWN_DISABLE,
+        .intr_type = GPIO_INTR_DISABLE,
+    };
+
+    gpio_config(&gpio_conf);
+    */
+    //gpio_install_isr_service();
+    gpio_intr_disable(TOUCHSCREEN_GPIO_INT);
+    gpio_set_direction(TOUCHSCREEN_GPIO_INT, GPIO_MODE_INPUT);
+    // pinMode(TOUCHSCREEN_INT, INPUT_PULLUP);
     gpio_set_intr_type(TOUCHSCREEN_GPIO_INT, GPIO_INTR_NEGEDGE);
-    gpio_isr_register(touchscreenInterrupt, NULL, 0 , NULL);
+    // gpio_isr_register(touchscreenInterrupt, NULL, 0 , NULL);
+
+    gpio_install_isr_service(0);
+    gpio_isr_handler_add(TOUCHSCREEN_GPIO_INT, touchscreenInterrupt, NULL);
     // attachInterrupt(TOUCHSCREEN_INT, tsInt, FALLING);
+    gpio_intr_enable(TOUCHSCREEN_GPIO_INT);
     hardwareReset();
-    if (!softwareReset())
-    {
-        gpio_isr_handler_remove(TOUCHSCREEN_GPIO_INT);
+    if (!softwareReset()) {
+        // gpio_isr_handler_remove(TOUCHSCREEN_GPIO_INT);
         // detachInterrupt(TOUCHSCREEN_INT);
+        ESP_LOGE(TAG, "unable to reset");
         return false;
     }
     getResolution(&_tsXResolution, &_tsYResolution);
@@ -87,22 +110,20 @@ bool TouchScreen::setup(uint8_t pwrState)
 bool TouchScreen::touchInArea(int16_t x1, int16_t y1, int16_t w, int16_t h)
 {
     int16_t x2 = x1 + w, y2 = y1 + h;
-    if (isAvailable())
-    {
+    if (isAvailable()) {
         uint8_t n;
         uint16_t x[2], y[2];
         n = getData(x, y);
 
-        if (n)
-        {
+        if (n) {
+            ESP_LOGI(TAG, "at: (%ld,%ld) (%ld,%ld) (%ld,%ld)", x, y, x1, y1, x2, y2 );
             _touchTime = esp_timer_get_time();
             _touchData = n;
             memcpy(_touchX, x, 2);
             memcpy(_touchY, y, 2);
         }
     }
-    if (esp_timer_get_time() - _touchTime < 1000)
-    {
+    if (esp_timer_get_time() - _touchTime < 100) {
         // Serial.printf("%d: %d, %d - %d, %d\n", touchN, touchX[0], touchY[0],
         // touchX[1], touchY[1]);
         if (_touchData == 1 && BOUND(x1, _touchX[0], x2) && BOUND(y1, _touchY[0], y2)) {
@@ -131,11 +152,13 @@ bool TouchScreen::touchInArea(int16_t x1, int16_t y1, int16_t w, int16_t h)
  */
 uint8_t TouchScreen::writeRegs(uint8_t addr, const uint8_t *buff, uint8_t size)
 {
+    Wire::enter();
     wire.begin_transmission(addr);
     for (uint8_t i = 0 ; i < size; i ++) {
         wire.write(buff[i]);
     }
     wire.end_transmission();
+    Wire::leave();
     return true;
 }
 
@@ -151,10 +174,12 @@ uint8_t TouchScreen::writeRegs(uint8_t addr, const uint8_t *buff, uint8_t size)
  */
 void TouchScreen::readRegs(uint8_t addr, uint8_t *buff, uint8_t size)
 {
+    Wire::enter();
     wire.request_from(addr, size);
     for ( uint8_t i = 0; i < size ; i ++) {
         buff[i] = wire.read();
     }
+    Wire::leave();
 }
 
 /**
@@ -166,6 +191,7 @@ void TouchScreen::hardwareReset()
     _mcp.digital_write(TOUCHSCREEN_RTS, MCP23017::SignalLevel::LOW);
     vTaskDelay(  20 / portTICK_PERIOD_MS );
     _mcp.digital_write(TOUCHSCREEN_RTS, MCP23017::SignalLevel::HIGH);
+    vTaskDelay(  20 / portTICK_PERIOD_MS );
     Wire::leave();
 /*
     digitalWriteInternal(MCP23017_INT_ADDR, mcpRegsInt, TS_RTS, LOW);
@@ -184,36 +210,32 @@ bool TouchScreen::softwareReset()
 {
     const char hello_packet[4] = {0x55, 0x55, 0x55, 0x55};
     const uint8_t soft_rst_cmd[] = {0x77, 0x77, 0x77, 0x77};
-    if (writeRegs(TOUCH_SCREEN_ADDRESS, soft_rst_cmd, 4) == 0)
-    {
-        uint8_t rb[4];
-        uint16_t timeout = 1000;
-        while (!_tsFlag && timeout > 0)
-        {
-            vTaskDelay( portTICK_PERIOD_MS );
-            // delay(1);
-            timeout--;
-        }
-        if (timeout > 0)
-            _tsFlag = true;
-        wire.request_from(0x15, 4);
-        for (uint8_t i =0 ; i < 4; i ++) {
-            rb[i] = wire.read();
-        }
-        _tsFlag = false;
-        if (!memcmp(rb, hello_packet, 4))
-        {
-            return true;
-        }
-        else
-        {
-            return false;
-        }
-    }
-    else
-    {
+
+    if ( !writeRegs(TOUCH_SCREEN_ADDRESS, soft_rst_cmd, 4)) {
+        ESP_LOGW(TAG, "unable to send data");
         return false;
     }
+    uint8_t rb[4];
+    uint16_t timeout = 100;
+    while (!_tsFlag && timeout > 0) {
+        vTaskDelay( 10 / portTICK_PERIOD_MS );
+        // delay(1);
+        timeout--;
+    }
+    if (timeout > 0)
+        _tsFlag = true;
+    Wire::enter();
+    wire.request_from(0x15, 4);
+    for (uint8_t i = 0 ; i < 4; i ++) {
+        rb[i] = wire.read();
+    }
+    Wire::leave();
+    _tsFlag = false;
+    if (memcmp(rb, hello_packet, 4) != 0) {
+        ESP_LOGW(TAG, "bad hello packet");
+        return false;
+    }
+    return true;
 }
 
 
@@ -237,10 +259,12 @@ void TouchScreen::shutdown()
  */
 void TouchScreen::getRawData(uint8_t *buffer)
 {
+    Wire::enter();
     wire.request_from(TOUCH_SCREEN_ADDRESS, 8);
     for (uint8_t i = 0 ;i < 8; i ++) {
         buffer[i] = wire.read();
     }
+    Wire::leave();
 }
 
 /**
@@ -286,19 +310,20 @@ uint8_t TouchScreen::getData(uint16_t *xPos, uint16_t *yPos)
     uint8_t fingers = 0;
     _tsFlag = false;
     getRawData(raw);
-    for (int i = 0; i < 8; i++)
-    {
+    for (int i = 0; i < 8; i++) {
         if (raw[7] & (1 << i))
             fingers++;
     }
     uint16_t inplate_width = _eInk.get_width();
     uint16_t inplate_height = _eInk.get_height();
 
-    for (int i = 0; i < 2; i++)
-    {
+    for (int i = 0; i < 2; i++) {
         getXY((raw + 1) + (i * 3), &xRaw[i], &yRaw[i]);
+        if (xRaw[i] != 0 || yRaw[i] != 0) {
+            ESP_LOGI(TAG, "raw %d %d:%d", i, xRaw[i], yRaw[i]);            
+        }
         // uint8_t rotation = Inkplate::getRotation();
-        uint8_t rotation = 0;
+        uint8_t rotation = 2;
         switch (rotation)
         {
         case 0:
@@ -337,10 +362,14 @@ void TouchScreen::getResolution(uint16_t *xRes, uint16_t *yRes)
     uint8_t rec[4];
     writeRegs(TOUCH_SCREEN_ADDRESS, cmd_x, 4);
     readRegs(TOUCH_SCREEN_ADDRESS, rec, 4);
+    ESP_LOGI(TAG, "res x: %ld, %ld, %ld, %ld", rec[0], rec[1], rec[2], rec[4]);
     *xRes = ((rec[2])) | ((rec[3] & 0xf0) << 4);
+    ESP_LOGI(TAG, "x: %d", *xRes);
     writeRegs(TOUCH_SCREEN_ADDRESS, cmd_y, 4);
     readRegs(TOUCH_SCREEN_ADDRESS, rec, 4);
+    ESP_LOGI(TAG, "res y: %ld, %ld, %ld, %ld", rec[0], rec[1], rec[2], rec[4]);
     *yRes = ((rec[2])) | ((rec[3] & 0xf0) << 4);
+    ESP_LOGI(TAG, "y: %d", *yRes);
     _tsFlag = false;
 }
 
